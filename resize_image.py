@@ -22,7 +22,7 @@ def resize_image(img, w, h):
 			else:   
 				right -= 1
 			total_height = right - left
-		crop_img = scaled_img[0:400, left:right]
+		crop_img = scaled_img[0:w, left:right]
 	else:
 		new_height = int(w/width)*height
 		scaled_img = cv2.resize(img, (h, new_height))
@@ -41,7 +41,8 @@ def resize_image(img, w, h):
 
 #	cv2.imshow("Display Window", scaled_img)
 #	cv2.imshow("Display Window", crop_img)
-	cv2.waitKey(0)
-	cv2.destroyAllWindows()
+#	cv2.waitKey(0)
+#	cv2.destroyAllWindows()
 	return crop_img
 
+#m = resize_image(cv2.imread("cow.jpg"), 400, 400);
