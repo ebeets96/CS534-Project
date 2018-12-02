@@ -1,0 +1,10 @@
+Running the Colorizer.py script
+
+Put all the training images in train/, test images in test/. Output will be in result/
+
+Make sure images are 256 x 256 in size. I have found this to be a pretty good size. The model architecture is built assuming this as the image size. If you do change th size make sure it is a power of 2
+
+Vary only the epochs in model.fit_generator(). Epochs below 1000 don't produce good enough results. 1000 is just good enough to give good results on the training set.
+Don't worry about the warning it gives at the end.
+
+There are a ton of variables such as number of layers, image size, number of epoch etc that can be optimized. I have only been able to test a few of them. Working on the model so it can perform better on test data
