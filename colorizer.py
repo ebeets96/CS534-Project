@@ -1,5 +1,5 @@
 import numpy as np
-import os 
+import os
 import sys,getopt
 import random
 import tensorflow as tf
@@ -32,7 +32,7 @@ from skimage.io import imsave
 # if __name__ == "__main__":
 # 	epochNum = 0
 # 	main(sys.argv[1:])
-# 	print 'main is being run'   
+# 	print 'main is being run'
 
 
 # trainFile ='train/'
@@ -42,6 +42,7 @@ from skimage.io import imsave
 
 # Get images
 trainImages = []
+
 for filename in os.listdir('train/'):
     trainImages.append(img_to_array(load_img('train/'+filename)))
 trainImages = np.array(trainImages, dtype=float)
@@ -65,7 +66,7 @@ def imageGenerator(batchSize):
     for batch in datagen.flow(trainSet, batch_size=batchSize):
         lab_batch = rgb2lab(batch)
         train_batch = lab_batch[:,:,:,0]
-        test_batch = lab_batch[:,:,:,1:] 
+        test_batch = lab_batch[:,:,:,1:]
         test_batch = test_batch /128
         yield (train_batch.reshape(train_batch.shape+(1,)), test_batch)
 
@@ -125,4 +126,3 @@ for i in range(len(output)):
         cur[:,:,0] = colorImages[i][:,:,0]
         cur[:,:,1:] = output[i]
         imsave("result/img_"+str(i)+".png", lab2rgb(cur))
-     
