@@ -104,6 +104,7 @@ print("Train Model")
 # Train model
 # Don't change steps_per_epoch. Vary the epochs only
 model.fit_generator(imageGenerator(batchSize), steps_per_epoch=1, epochs=1000)
+# model.load_weights('colorModelWeights.h5')
 
 # Save model
 model_json = model.to_json()
@@ -121,11 +122,11 @@ print model.evaluate(Xtest, Ytest, batch_size=batchSize)
 # Load black and white images from the test/ folder
 colorImages = []
 abc = 0
-for filename in os.listdir('test_cropped/'):
+for filename in os.listdir('other/'):
 	sys.stdout.write('\r')
 	sys.stdout.write('Load image %d' % abc)
 	sys.stdout.flush()
-	colorImages.append(img_to_array(load_img('test_cropped/'+filename)))
+	colorImages.append(img_to_array(load_img('other/'+filename)))
 	abc = abc + 1
 	if(abc > 100):
 		break
@@ -133,10 +134,10 @@ for filename in os.listdir('test_cropped/'):
 print("\nConvert to Numpy array")
 colorImages = np.array(colorImages, dtype=float)
 
-print("\nRun RGB2Lab")
+print("Run RGB2Lab")
 colorImages = rgb2lab(1.0/255*colorImages)[:,:,:,0]
 
-print("\nReshape")
+print("Reshape")
 colorImages = colorImages.reshape(colorImages.shape+(1,))
 
 # Test model
