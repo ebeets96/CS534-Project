@@ -41,10 +41,18 @@ from skimage.io import imsave
 #
 
 # Get images
+print("Load training images");
 trainImages = []
+abc = 0
+for filename in os.listdir('train_cropped/'):
+	sys.stdout.write('\r')
+	sys.stdout.write('Load image %d' % abc)
+	sys.stdout.flush()
+	trainImages.append(img_to_array(load_img('train_cropped/'+filename)))
+	abc = abc + 1
 
-for filename in os.listdir('train/'):
-    trainImages.append(img_to_array(load_img('train/'+filename)))
+print("\n Create Data Generator")
+
 trainImages = np.array(trainImages, dtype=float)
 # Set up training and test data
 split = int(0.95*len(trainImages))
@@ -70,6 +78,7 @@ def imageGenerator(batchSize):
         test_batch = test_batch /128
         yield (train_batch.reshape(train_batch.shape+(1,)), test_batch)
 
+print("Create Network Model")
 #Neural Net model
 model = Sequential()
 model.add(InputLayer(input_shape=(256, 256, 1)))  #change to 256,256
@@ -91,9 +100,10 @@ model.add(UpSampling2D((2, 2)))
 model.compile(optimizer='rmsprop', loss='mse')
 
 
+print("Train Model")
 # Train model
 # Don't change steps_per_epoch. Vary the epochs only
-model.fit_generator(imageGenerator(batchSize), steps_per_epoch=1, epochs=10)
+model.fit_generator(imageGenerator(batchSize), steps_per_epoch=1, epochs=1000)
 
 # Save model
 model_json = model.to_json()
@@ -110,13 +120,27 @@ print model.evaluate(Xtest, Ytest, batch_size=batchSize)
 
 # Load black and white images from the test/ folder
 colorImages = []
-for filename in os.listdir('test/'):
-        colorImages.append(img_to_array(load_img('test/'+filename)))
+abc = 0
+for filename in os.listdir('test_cropped/'):
+	sys.stdout.write('\r')
+	sys.stdout.write('Load image %d' % abc)
+	sys.stdout.flush()
+	colorImages.append(img_to_array(load_img('test_cropped/'+filename)))
+	abc = abc + 1
+	if(abc > 100):
+		break
+
+print("\nConvert to Numpy array")
 colorImages = np.array(colorImages, dtype=float)
+
+print("\nRun RGB2Lab")
 colorImages = rgb2lab(1.0/255*colorImages)[:,:,:,0]
+
+print("\nReshape")
 colorImages = colorImages.reshape(colorImages.shape+(1,))
 
 # Test model
+print("Test model")
 output = model.predict(colorImages)
 output = output * 128
 
