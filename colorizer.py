@@ -35,31 +35,24 @@ from skimage.io import imsave
 # 	print 'main is being run'
 
 
-# trainFile ='train/'
-# testFile = 'test/'
-# resultFile = 'result'
-#
+trainFile ='train_cropped/'
+testFile = 'test_cropped/'
+resultFile = 'result/'
+epochs = 1000 #1000
+
 
 # Get images
 print("Load training images");
 trainImages = []
-abc = 0
-for filename in os.listdir('train_cropped/'):
-	sys.stdout.write('\r')
-	sys.stdout.write('Load image %d' % abc)
-	sys.stdout.flush()
-	trainImages.append(img_to_array(load_img('train_cropped/'+filename)))
-	abc = abc + 1
-
-print("\n Create Data Generator")
-
+for filename in os.listdir(trainFile):
+    trainImages.append(img_to_array(load_img(trainFile+filename)))
 trainImages = np.array(trainImages, dtype=float)
 # Set up training and test data
 split = int(0.95*len(trainImages))
 trainSet = trainImages[:split]
 trainSet = trainSet*1.0/255
 
-
+print("\n Create Data Generator")
 # Image transformer
 datagen = ImageDataGenerator(
         shear_range=0.1,
@@ -79,38 +72,34 @@ def imageGenerator(batchSize):
         yield (train_batch.reshape(train_batch.shape+(1,)), test_batch)
 
 print("Create Network Model")
+
 #Neural Net model
 model = Sequential()
-model.add(InputLayer(input_shape=(256, 256, 1)))  #change to 256,256
-model.add(Conv2D(64, (3, 3),  padding='same',activation='relu'))
-model.add(Conv2D(64, (3, 3), padding='same',activation='relu', strides=2))
-model.add(Conv2D(128, (3, 3), padding='same',activation='relu'))
-model.add(Conv2D(128, (3, 3), padding='same',activation='relu', strides=2))
-model.add(Conv2D(256, (3, 3), padding='same',activation='relu'))
-model.add(Conv2D(256, (3, 3), padding='same',activation='relu', strides=2))
-model.add(Conv2D(512, (3, 3), padding='same',activation='relu'))
-model.add(Conv2D(256, (3, 3), padding='same',activation='relu'))
-model.add(Conv2D(128, (3, 3), padding='same',activation='relu'))
+model.add(InputLayer(input_shape=(None, None, 1)))
+model.add(Conv2D(8, (3, 3), activation='relu', padding='same', strides=2))
+model.add(Conv2D(8, (3, 3), activation='relu', padding='same'))
+model.add(Conv2D(16, (3, 3), activation='relu', padding='same'))
+model.add(Conv2D(16, (3, 3), activation='relu', padding='same', strides=2))
+model.add(Conv2D(32, (3, 3), activation='relu', padding='same'))
+model.add(Conv2D(32, (3, 3), activation='relu', padding='same', strides=2))
 model.add(UpSampling2D((2, 2)))
-model.add(Conv2D(64, (3, 3), padding='same',activation='relu'))
+model.add(Conv2D(32, (3, 3), activation='relu', padding='same'))
 model.add(UpSampling2D((2, 2)))
-model.add(Conv2D(32, (3, 3), padding='same',activation='relu'))
-model.add(Conv2D(2, (3, 3), padding='same',activation='sigmoid'))
+model.add(Conv2D(16, (3, 3), activation='relu', padding='same'))
 model.add(UpSampling2D((2, 2)))
+model.add(Conv2D(2, (3, 3), activation='tanh', padding='same'))
 model.compile(optimizer='rmsprop', loss='mse')
-
-
-print("Train Model")
 # Train model
 # Don't change steps_per_epoch. Vary the epochs only
-model.fit_generator(imageGenerator(batchSize), steps_per_epoch=1, epochs=1000)
-# model.load_weights('colorModelWeights.h5')
+model.fit_generator(imageGenerator(batchSize), steps_per_epoch=3, epochs=epochs)
 
 # Save model
 model_json = model.to_json()
 with open("colorModel.json", "w") as json_file:
     json_file.write(model_json)
 model.save_weights("colorModelWeights.h5")
+
+# model.load_weights("colorModelWeights.h5")
 
 # Test images
 Xtest = rgb2lab(1.0/255*trainImages[split:])[:,:,:,0]
@@ -121,23 +110,15 @@ print model.evaluate(Xtest, Ytest, batch_size=batchSize)
 
 # Load black and white images from the test/ folder
 colorImages = []
-abc = 0
-for filename in os.listdir('other/'):
-	sys.stdout.write('\r')
-	sys.stdout.write('Load image %d' % abc)
-	sys.stdout.flush()
-	colorImages.append(img_to_array(load_img('other/'+filename)))
-	abc = abc + 1
-	if(abc > 100):
+a = 0;
+for filename in os.listdir(testFile):
+	colorImages.append(img_to_array(load_img(testFile+filename)))
+	a = a + 1
+	if(a>100):
 		break
 
-print("\nConvert to Numpy array")
 colorImages = np.array(colorImages, dtype=float)
-
-print("Run RGB2Lab")
 colorImages = rgb2lab(1.0/255*colorImages)[:,:,:,0]
-
-print("Reshape")
 colorImages = colorImages.reshape(colorImages.shape+(1,))
 
 # Test model
@@ -150,4 +131,4 @@ for i in range(len(output)):
         cur = np.zeros((256, 256, 3)) #change to 256,256
         cur[:,:,0] = colorImages[i][:,:,0]
         cur[:,:,1:] = output[i]
-        imsave("result/img_"+str(i)+".png", lab2rgb(cur))
+        imsave( resultFile+"img_"+str(i)+".png", lab2rgb(cur))
