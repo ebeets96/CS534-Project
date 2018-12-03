@@ -68,7 +68,7 @@ def imageGenerator(batchSize):
         lab_batch = rgb2lab(batch)
         train_batch = lab_batch[:,:,:,0]
         test_batch = lab_batch[:,:,:,1:]
-        test_batch = test_batch /128
+        test_batch = test_batch / 128
         yield (train_batch.reshape(train_batch.shape+(1,)), test_batch)
 
 print("Create Network Model")
@@ -106,7 +106,7 @@ Xtest = rgb2lab(1.0/255*trainImages[split:])[:,:,:,0]
 Xtest = Xtest.reshape(Xtest.shape+(1,))
 Ytest = rgb2lab(1.0/255*trainImages[split:])[:,:,:,1:]
 Ytest = Ytest / 128
-print model.evaluate(Xtest, Ytest, batch_size=batchSize)
+print(model.evaluate(Xtest, Ytest, batch_size=batchSize))
 
 # Load black and white images from the test/ folder
 colorImages = []
