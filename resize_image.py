@@ -16,10 +16,10 @@ def resize_image(img, w, h):
 		left = 0
 		right = new_width
 		total_height = new_width
-		while (total_height != 400):
+		while (total_height != h):
 			if i % 2 == 0:
 				left += 1
-			else:   
+			else:
 				right -= 1
 			total_height = right - left
 		crop_img = scaled_img[0:w, left:right]
@@ -35,8 +35,8 @@ def resize_image(img, w, h):
 				top += 1
 			else:
 				bottom -= 1
-			total_height = bottom - top 			
-		
+			total_height = bottom - top
+
 		crop_img = scaled_img[top:bottom, 0:w]
 
 #	cv2.imshow("Display Window", scaled_img)
