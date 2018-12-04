@@ -13,27 +13,28 @@ class FileReader:
 	# returns false if EOF is reached
 	def next_images(self, foldername, number_of_images):
 		# delete folder and all images and recreate it
-		shutil.rmtree(foldername, True)
-		os.makedirs(foldername)
+		# shutil.rmtree(foldername, True)
+		# os.makedirs(foldername)
 
 
 		# loop through the next set of images and download them to the folder
-		i = 0
-		while(i < number_of_images):
-			line = self.file.readline()
-			if(line == ''):
+		i = 1
+		while(i <= number_of_images):
+			print("Downloading Image %d", end="\r")
+			url = self.file.readline().rstrip("\r\n")
+			if(url == ''):
 				return False
 
-			url = line.split()[1]
+			#url = line.split()[1]
 			image = url.split("/")[-1]
 
 			try:
-				download = requests.get(url, allow_redirects=False, timeout=5)
+				download = requests.get(url, allow_redirects=False, timeout=10)
 				if download.status_code == 200:
 					with open(foldername + "/" + image, 'wb') as f:
 						f.write(download.content)
 				else:
-					raise Exception()
+					raise Exception("Status code was %d rather than 200" % download.status_code)
 
 				i = i + 1
 			except:
