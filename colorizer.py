@@ -35,17 +35,23 @@ from skimage.io import imsave
 # 	print 'main is being run'
 
 
-trainFile ='train_cropped/'
+trainFile ='flickr_cropped/'
 testFile = 'test_cropped/'
 resultFile = 'result/'
 epochs = 1000 #1000
+number_of_images = 50000
 
 
 # Get images
 print("Load training images");
 trainImages = []
+i = 0
 for filename in os.listdir(trainFile):
-    trainImages.append(img_to_array(load_img(trainFile+filename)))
+	trainImages.append(img_to_array(load_img(trainFile+filename)))
+	i = i + 1
+	if(i == number_of_images):
+		break
+
 trainImages = np.array(trainImages, dtype=float)
 # Set up training and test data
 split = int(0.95*len(trainImages))
@@ -110,12 +116,9 @@ print(model.evaluate(Xtest, Ytest, batch_size=batchSize))
 
 # Load black and white images from the test/ folder
 colorImages = []
-a = 0;
+print("Load test images")
 for filename in os.listdir(testFile):
 	colorImages.append(img_to_array(load_img(testFile+filename)))
-	a = a + 1
-	if(a>100):
-		break
 
 colorImages = np.array(colorImages, dtype=float)
 colorImages = rgb2lab(1.0/255*colorImages)[:,:,:,0]
