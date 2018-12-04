@@ -35,28 +35,55 @@ from skimage.io import imsave
 # 	print 'main is being run'
 
 
-trainFile ='flickr_cropped/'
+trainFile ='flickr3_cropped/'
 testFile = 'test_cropped/'
 resultFile = 'result/'
-epochs = 1000 #1000
-number_of_images = 50000
+epochs = 1000
 
+def create_mini_training_set (number_of_images, split_size):
+	trainImages = []
+	skipped = 0
+	for filename in os.listdir(trainFile):
+		#skip split files
+		if(skipped < split_size):
+			skipped = skipped + 1
+			continue
+
+		trainImages.append(img_to_array(load_img(trainFile+filename)))
+		if(len(trainImages) == number_of_images):
+			trainImages = np.array(trainImages, dtype=float)
+			yield trainImages
+			trainImages = []
+
+	if (len(trainImages) > 0):
+		trainImages = np.array(trainImages, dtype=float)
+		yield trainImages
+
+def getSplit (split_size):
+	splitImages = []
+	for filename in os.listdir(trainFile):
+		splitImages.append(img_to_array(load_img(trainFile+filename)))
+		if(len(splitImages) == split_size):
+			splitImages = np.array(splitImages, dtype=float)
+			return splitImages
 
 # Get images
-print("Load training images");
-trainImages = []
-i = 0
-for filename in os.listdir(trainFile):
-	trainImages.append(img_to_array(load_img(trainFile+filename)))
-	i = i + 1
-	if(i == number_of_images):
-		break
+# print("Load training images");
+# trainImages = []
+# i = 0
+# for filename in os.listdir(trainFile):
+# 	trainImages.append(img_to_array(load_img(trainFile+filename)))
+# 	i = i + 1
+# 	if(i == number_of_images):
+# 		break
 
-trainImages = np.array(trainImages, dtype=float)
+# trainImages = np.array(trainImages, dtype=float)
 # Set up training and test data
-split = int(0.95*len(trainImages))
-trainSet = trainImages[:split]
-trainSet = trainSet*1.0/255
+number_of_images = len([name for name in os.listdir(trainFile) if os.path.isfile(os.path.join(trainFile, name))])
+split_size = int(0.05*number_of_images)
+split_set = getSplit(split_size)
+# trainSet = trainImages[:split]
+# trainSet = trainSet*1.0/255
 
 print("\n Create Data Generator")
 # Image transformer
@@ -66,16 +93,17 @@ datagen = ImageDataGenerator(
         rotation_range=10,
         horizontal_flip=False)
 
-
 # Generate training data
 batchSize = 10
 def imageGenerator(batchSize):
-    for batch in datagen.flow(trainSet, batch_size=batchSize):
-        lab_batch = rgb2lab(batch)
-        train_batch = lab_batch[:,:,:,0]
-        test_batch = lab_batch[:,:,:,1:]
-        test_batch = test_batch / 128
-        yield (train_batch.reshape(train_batch.shape+(1,)), test_batch)
+	for trainImages in create_mini_training_set(500, split_size):
+		trainSet = trainImages*1.0/255
+		for batch in datagen.flow(trainSet, batch_size=batchSize):
+			lab_batch = rgb2lab(batch)
+			train_batch = lab_batch[:,:,:,0]
+			test_batch = lab_batch[:,:,:,1:]
+			test_batch = test_batch / 128
+			yield (train_batch.reshape(train_batch.shape+(1,)), test_batch)
 
 print("Create Network Model")
 
@@ -108,9 +136,9 @@ model.save_weights("colorModelWeights.h5")
 # model.load_weights("colorModelWeights.h5")
 
 # Test images
-Xtest = rgb2lab(1.0/255*trainImages[split:])[:,:,:,0]
+Xtest = rgb2lab(1.0/255*split_set)[:,:,:,0]
 Xtest = Xtest.reshape(Xtest.shape+(1,))
-Ytest = rgb2lab(1.0/255*trainImages[split:])[:,:,:,1:]
+Ytest = rgb2lab(1.0/255*split_set)[:,:,:,1:]
 Ytest = Ytest / 128
 print(model.evaluate(Xtest, Ytest, batch_size=batchSize))
 
