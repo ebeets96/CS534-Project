@@ -11,14 +11,16 @@ def resize_image(img, w, h):
 	scaled_img = img
 	if (height - h) <= (width - w):
 		#image is scaled so that height is = h
-		new_width = int((h/height)*width)
-		scaled_img = cv2.resize(img, (new_width, w))
+		new_width = int(h*width/height)
+		# print("new_width: {0}, h: {1}".format(new_width, h))
+		scaled_img = cv2.resize(img, (new_width, h))
 		# i = 0
 		left = int((new_width - w)/2)
 		right = left + w
 		crop_img = scaled_img[0:w, left:right]
 	else:
-		new_height = int(w/width*height)
+		new_height = int(w*height/width)
+		# print("new_height: {0}, w: {1}".format(new_height, w))
 		scaled_img = cv2.resize(img, (w, new_height))
 		i = 0
 		top = int((new_height - h)/2)

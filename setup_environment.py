@@ -4,11 +4,11 @@ import os
 import cv2
 
 if __name__ == '__main__':
-	directory = "flickr3"
+	directory = "flickr_mac"
 
 	print("Reading file...")
 	file_reader = rf.FileReader("many_images.txt")
-	file_reader.next_images(directory, 50000)
+	file_reader.next_images(directory, 10000)
 	del file_reader
 
 	print("Resizing images...")
@@ -17,5 +17,6 @@ if __name__ == '__main__':
 		try:
 			img = ri.resize_image(img, 256, 256);
 			cv2.imwrite(directory + '_cropped/'+filename, img)
-		except:
+		except Exception as err:
 			print("Skipping flickr/" + filename)
+			print("\t{0}".format(err))
